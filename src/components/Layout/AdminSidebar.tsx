@@ -1,6 +1,6 @@
 import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { BarChart3, Building2, Shield, LogOut, Activity } from "lucide-react";
+import { BarChart3, Users, Shield, LogOut, Activity } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 
 const AdminSidebar: React.FC = () => {
@@ -9,7 +9,7 @@ const AdminSidebar: React.FC = () => {
 
   const navItems = [
     { to: "/admin/dashboard", icon: BarChart3, label: "Dashboard" },
-    { to: "/admin/companies", icon: Building2, label: "Users" },
+    { to: "/admin/companies", icon: Users, label: "Empresas" },
   ];
 
   const isActive = (path: string) => location.pathname === path;
