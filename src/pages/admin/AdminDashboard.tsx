@@ -64,13 +64,13 @@ interface IndustryData {
 
 const AdminDashboard: React.FC = () => {
   const [stats, setStats] = useState<AdminStats>({
-    totalCompanies: 45,
-    totalEmailsMonitored: 2847392,
-    totalUsers: 1247,
-    monthlyGrowth: 18.5,
-    activeCompanies: 42,
-    inactiveCompanies: 3,
-    avgEmailsPerCompany: 63275,
+    totalCompanies: 0,
+    totalEmailsMonitored: 0,
+    totalUsers: 0,
+    monthlyGrowth: 0,
+    activeCompanies: 0,
+    inactiveCompanies: 0,
+    avgEmailsPerCompany: 0,
     systemUptime: "99.9%",
   });
 

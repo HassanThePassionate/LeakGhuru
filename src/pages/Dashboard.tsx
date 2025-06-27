@@ -1,31 +1,31 @@
-import React, { useState, useEffect } from 'react';
-import { RefreshCw } from 'lucide-react';
-import EnhancedMetricCard from '../components/Dashboard/EnhancedMetricCard';
-import InteractiveChart from '../components/Dashboard/InteractiveChart';
-import GeographicMap from '../components/Dashboard/GeographicMap';
-import ErrorBoundary from '../components/Dashboard/ErrorBoundary';
-import { DashboardSkeleton } from '../components/Dashboard/LoadingStates';
-import { useDashboardData } from '../hooks/useDashboardData';
-import { useRealTimeData } from '../hooks/useRealTimeData';
-import { FilterOptions, NotificationData, ChartData } from '../types/dashboard';
-import { mockLeakLocations, mockEmailVolumeData } from '../data/mockData';
+import React, { useState } from "react";
+import { RefreshCw } from "lucide-react";
+import EnhancedMetricCard from "../components/Dashboard/EnhancedMetricCard";
+import InteractiveChart from "../components/Dashboard/InteractiveChart";
+import GeographicMap from "../components/Dashboard/GeographicMap";
+import ErrorBoundary from "../components/Dashboard/ErrorBoundary";
+import { DashboardSkeleton } from "../components/Dashboard/LoadingStates";
+import { useDashboardData } from "../hooks/useDashboardData";
+import { useRealTimeData } from "../hooks/useRealTimeData";
+import { FilterOptions, ChartData } from "../types/dashboard";
+import { mockLeakLocations, mockEmailVolumeData } from "../data/mockData";
 
 const Dashboard: React.FC = () => {
-  const [filters, setFilters] = useState<FilterOptions>({
+  const [filters] = useState<FilterOptions>({
     dateRange: {
       start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-      end: new Date()
+      end: new Date(),
     },
-    categories: ['Emails', 'Segurança'],
-    status: ['Ativo', 'Crítico'],
-    customFilters: {}
+    categories: ["Emails", "Segurança"],
+    status: ["Ativo", "Crítico"],
+    customFilters: {},
   });
 
-  const { metrics, chartData, tableData, loading, error, refreshData } = useDashboardData(filters);
-  const { data: realTimeMetrics, isConnected, toggleRealTime } = useRealTimeData(metrics);
+  const { metrics, loading, error, refreshData } = useDashboardData(filters);
+  const { data: realTimeMetrics } = useRealTimeData(metrics);
 
   const handleChartDrillDown = (dataPoint: ChartData) => {
-    console.log('Analisar em detalhe:', dataPoint);
+    console.log("Analisar em detalhe:", dataPoint);
   };
 
   if (loading) {
@@ -52,8 +52,13 @@ const Dashboard: React.FC = () => {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">Painel de Controlo Avançado</h1>
-            <p className="text-gray-400">Monitorização em tempo real de fugas de dados corporativos e análises</p>
+            <h1 className="text-3xl font-bold text-white mb-2">
+              Painel de Controlo Avançado
+            </h1>
+            <p className="text-gray-400">
+              Monitorização em tempo real de fugas de dados corporativos e
+              análises
+            </p>
           </div>
           <div className="flex items-center space-x-4">
             <button
@@ -72,7 +77,7 @@ const Dashboard: React.FC = () => {
             <EnhancedMetricCard
               key={metric.id}
               metric={metric}
-              onClick={() => console.log('Métrica clicada:', metric.title)}
+              onClick={() => console.log("Métrica clicada:", metric.title)}
             />
           ))}
         </div>
@@ -80,11 +85,11 @@ const Dashboard: React.FC = () => {
         {/* Charts Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <InteractiveChart
-            data={mockEmailVolumeData.map(item => ({
+            data={mockEmailVolumeData.map((item) => ({
               id: item.month,
               name: item.month,
               value: item.emails,
-              category: 'emails'
+              category: "emails",
             }))}
             title="Emails monitorizados"
             type="area"

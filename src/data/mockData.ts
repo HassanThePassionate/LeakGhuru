@@ -1,5 +1,4 @@
 import {
-  Company,
   Employee,
   Settings,
   DashboardStats,
@@ -7,68 +6,23 @@ import {
   EmailVolumeData,
 } from "../types";
 
-export const mockCompany: Company = {
-  name: "TechCorp Solutions",
-  industry: "Technology",
-  employeeCount: "250-500",
-  website: "https://techcorp.com",
-  email: "contact@techcorp.com",
-  phone: "(+351) 213 456 789",
-  address: "123 Tech Street, Silicon Valley, CA 94000",
-  foundingDate: "2015-03-15",
-  responsiblePerson: "John Anderson",
-  description:
-    "Leading technology solutions provider specializing in enterprise software development and cybersecurity services.",
-};
+export const mockCompany = {};
 
-export const mockEmployees: Employee[] = [
-  {
-    id: "1",
-    name: "Sarah Johnson",
-    position: "Senior Developer",
-    email: "sarah.johnson@techcorp.com",
-    phone: "(+351) 912 345 678",
-    company: "TechCorp Solutions",
-  },
-  {
-    id: "2",
-    name: "Michael Chen",
-    position: "Product Manager",
-    email: "michael.chen@techcorp.com",
-    phone: "(+351) 923 456 789",
-    company: "TechCorp Solutions",
-  },
-  {
-    id: "3",
-    name: "Emily Rodriguez",
-    position: "Security Analyst",
-    email: "emily.rodriguez@techcorp.com",
-    phone: "(+351) 934 567 890",
-    company: "TechCorp Solutions",
-  },
-  {
-    id: "4",
-    name: "David Thompson",
-    position: "DevOps Engineer",
-    email: "david.thompson@techcorp.com",
-    phone: "(+351) 945 678 901",
-    company: "TechCorp Solutions",
-  },
-];
+export const mockEmployees: Employee[] = [];
 
 export const mockSettings: Settings = {
-  accountName: "TechCorp Solutions",
-  accessKey: "LEAK-MON-2024-TECH-CORP-SECURE-KEY-9876",
+  name: "",
+  accessKey: "",
   weeklyReports: true,
   smsNotifications: true,
   emailNotifications: true,
 };
 
 export const mockDashboardStats: DashboardStats = {
-  totalEmails: 124536,
-  totalLeaks: 23,
-  monthlyGrowth: 12.5,
-  activeMonitoring: 247,
+  totalEmails: 0,
+  totalLeaks: 0,
+  monthlyGrowth: 0,
+  activeMonitoring: 0,
 };
 
 export const mockLeakLocations: LeakLocation[] = [
