@@ -1,25 +1,26 @@
-import React from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
-import { 
-  BarChart3, 
-  Building2, 
-  Users, 
-  Settings, 
+import React from "react";
+import { NavLink, useLocation } from "react-router-dom";
+import {
+  BarChart3,
+  Building2,
+  Users,
+  Settings,
   Shield,
   LogOut,
-  Activity
-} from 'lucide-react';
-import { useAuth } from '../../hooks/useAuth';
+  Activity,
+} from "lucide-react";
 
 const Sidebar: React.FC = () => {
-  const { logout } = useAuth();
   const location = useLocation();
-
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    window.location.href = "/login";
+  };
   const navItems = [
-    { to: '/dashboard', icon: BarChart3, label: 'Painel de Controlo' },
-    { to: '/company', icon: Building2, label: 'Perfil da Empresa' },
-    { to: '/monitoring', icon: Users, label: 'Monitorização' },
-    { to: '/settings', icon: Settings, label: 'Definições' },
+    { to: "/dashboard", icon: BarChart3, label: "Painel de Controlo" },
+    { to: "/company", icon: Building2, label: "Perfil da Empresa" },
+    { to: "/monitoring", icon: Users, label: "Monitorização" },
+    { to: "/settings", icon: Settings, label: "Definições" },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -46,8 +47,8 @@ const Sidebar: React.FC = () => {
                 to={item.to}
                 className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 group ${
                   isActive(item.to)
-                    ? 'bg-primary text-white shadow-lg'
-                    : 'text-gray-300 hover:bg-tertiary hover:text-primary'
+                    ? "bg-primary text-white shadow-lg"
+                    : "text-gray-300 hover:bg-tertiary hover:text-primary"
                 }`}
               >
                 <item.icon className="w-5 h-5" />
@@ -76,7 +77,7 @@ const Sidebar: React.FC = () => {
 
         {/* Logout Button */}
         <button
-          onClick={logout}
+          onClick={handleLogout}
           className="flex items-center space-x-3 px-4 py-3 w-full text-left text-gray-300 hover:bg-tertiary hover:text-red-400 rounded-lg transition-all duration-200"
         >
           <LogOut className="w-5 h-5" />

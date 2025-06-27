@@ -1,6 +1,6 @@
 export interface Company {
   name: string;
-  industry: string;
+  sector: string;
   employeeCount: string;
   website: string;
   email: string;
@@ -12,16 +12,17 @@ export interface Company {
 }
 
 export interface Employee {
+  _id: string;
   id: string;
   name: string;
-  position: string;
+  jobRole: string;
   email: string;
   phone: string;
-  company: string;
+  enterprise: string;
 }
 
 export interface Settings {
-  accountName: string;
+  name: string;
   accessKey: string;
   weeklyReports: boolean;
   smsNotifications: boolean;
