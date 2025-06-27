@@ -87,7 +87,6 @@ interface NewCompany {
 
 const CompanyManagement: React.FC = () => {
   const [companies, setCompanies] = useState<Company[]>([]);
-
   const [totalEmployees, setTotalEmployees] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
@@ -116,18 +115,16 @@ const CompanyManagement: React.FC = () => {
     responsiblePerson: "",
     description: "",
   });
-
+  const getCompanies = async () => {
+    try {
+      const data = await getAllCompanies();
+      console.log(data);
+      setCompanies(data);
+    } catch (err: any) {
+      console.log(err.message || "Something went wrong");
+    }
+  };
   useEffect(() => {
-    const getCompanies = async () => {
-      try {
-        const data = await getAllCompanies();
-        console.log(data);
-        setCompanies(data);
-      } catch (err: any) {
-        console.log(err.message || "Something went wrong");
-      }
-    };
-
     getCompanies();
   }, []);
   const filteredCompanies = companies.filter(
@@ -266,7 +263,8 @@ const CompanyManagement: React.FC = () => {
     handleInputChange("phone", formatted);
   };
 
-  const handleAddCompany = async () => {
+  const handleAddCompany = async (e: any) => {
+    e.preventDefault();
     setIsSaving(true);
     console.log("Before submit - foundingDate:", newCompany.foundingDate);
 
@@ -296,7 +294,7 @@ const CompanyManagement: React.FC = () => {
       };
 
       setCompanies((prev) => [...prev, newCompanyData]);
-
+      getCompanies();
       // Reset Form
       setNewCompany({
         _id: "",

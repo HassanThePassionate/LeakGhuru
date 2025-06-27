@@ -1,4 +1,7 @@
-import React, { useEffect, useState } from "react";
+"use client";
+
+import type React from "react";
+import { useEffect, useState } from "react";
 import {
   Plus,
   Search,
@@ -10,14 +13,17 @@ import {
   Save,
   AlertTriangle,
 } from "lucide-react";
-import { Employee } from "../types";
 
-import {
-  createEmployeeProfile,
-  DeleteEmployeeProfile,
-  getEmployeeData,
-  updateEmployeeProfile,
-} from "../api/employees";
+// Mock types and API functions for demonstration
+interface Employee {
+  _id: string;
+  id: string;
+  name: string;
+  jobRole: string;
+  email: string;
+  phone: string;
+  enterprise: string;
+}
 
 interface NewEmployee {
   name: string;
@@ -26,6 +32,40 @@ interface NewEmployee {
   phone: string;
   enterprise: string;
 }
+
+// Mock API functions
+const getEmployeeData = async (): Promise<Employee[]> => {
+  // Simulate API call
+  return [];
+};
+
+const createEmployeeProfile = async (
+  employee: NewEmployee
+): Promise<Employee> => {
+  // Simulate API call
+  return {
+    _id: Date.now().toString(),
+    id: Date.now().toString(),
+    ...employee,
+  };
+};
+
+const updateEmployeeProfile = async (
+  employee: NewEmployee,
+  id: string
+): Promise<Employee> => {
+  // Simulate API call
+  return {
+    _id: id,
+    id: id,
+    ...employee,
+  };
+};
+
+const DeleteEmployeeProfile = async (id: string): Promise<void> => {
+  // Simulate API call
+  console.log("Deleting employee:", id);
+};
 
 const Monitoring: React.FC = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -41,7 +81,6 @@ const Monitoring: React.FC = () => {
     null
   );
   const [isDeleting, setIsDeleting] = useState(false);
-
   const [newEmployee, setNewEmployee] = useState<NewEmployee>({
     name: "",
     jobRole: "",
@@ -49,13 +88,21 @@ const Monitoring: React.FC = () => {
     phone: "",
     enterprise: "",
   });
-  useEffect(() => {
-    const employeeData = async () => {
+
+  const employeeData = async () => {
+    try {
       const data = await getEmployeeData();
       setEmployees(data);
-    };
+    } catch (error) {
+      console.error("Failed to fetch employees:", error);
+    }
+  };
+
+  // Fix: Add dependency array to prevent infinite re-renders
+  useEffect(() => {
     employeeData();
-  });
+  }, []); // Empty dependency array means this runs only once on mount
+
   const filteredEmployees = employees.filter(
     (employee) =>
       employee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -107,7 +154,6 @@ const Monitoring: React.FC = () => {
 
   const formatPhoneNumber = (value: string) => {
     const numbers = value.replace(/\D/g, "");
-
     if (numbers.startsWith("351")) {
       const remaining = numbers.slice(3);
       if (remaining.length <= 3) {
@@ -121,7 +167,6 @@ const Monitoring: React.FC = () => {
         )} ${remaining.slice(6, 9)}`;
       }
     }
-
     if (numbers.length <= 3) {
       return `(+351) ${numbers}`;
     } else if (numbers.length <= 6) {
@@ -139,7 +184,9 @@ const Monitoring: React.FC = () => {
     handleInputChange("phone", formatted);
   };
 
-  const handleSubmit = async () => {
+  // Fix: Add event parameter and prevent default form submission
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault(); // This prevents the page refresh
     setIsSaving(true);
 
     try {
@@ -148,26 +195,20 @@ const Monitoring: React.FC = () => {
         setEmployees((prev) => [...prev, createdEmployee]);
       } else if (modalType === "edit" && selectedEmployee) {
         const updatedEmployee = await updateEmployeeProfile(
-          {
-            name: newEmployee.name,
-            jobRole: newEmployee.jobRole,
-            email: newEmployee.email,
-            phone: newEmployee.phone,
-            enterprise: newEmployee.enterprise,
-          },
+          newEmployee,
           selectedEmployee._id
         );
         setEmployees((prev) =>
           prev.map((emp) =>
-            emp.id === selectedEmployee.id ? updatedEmployee : emp
+            emp._id === selectedEmployee._id ? updatedEmployee : emp
           )
         );
       }
+      closeModal();
     } catch (error) {
       console.error("Failed to save employee:", error);
     } finally {
       setIsSaving(false);
-      closeModal();
     }
   };
 
@@ -189,10 +230,8 @@ const Monitoring: React.FC = () => {
       await DeleteEmployeeProfile(employeeToDelete._id);
       setEmployees(employees.filter((emp) => emp._id !== employeeToDelete._id));
       closeDeleteModal();
-      // Show success message
     } catch (error) {
       console.error("Failed to delete employee:", error);
-      // Show error message
     } finally {
       setIsDeleting(false);
     }

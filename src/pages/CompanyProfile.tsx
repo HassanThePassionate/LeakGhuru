@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from "react";
 import { Building2, Save, Edit3 } from "lucide-react";
 import { Company } from "../types";
@@ -38,7 +39,8 @@ const CompanyProfile: React.FC = () => {
     fetchCompanyData();
   }, []);
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e: any) => {
+    e.preventDefault();
     setIsSaving(true);
 
     try {
