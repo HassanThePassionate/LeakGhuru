@@ -23,12 +23,6 @@ const Settings: React.FC = () => {
     };
     settingData();
   });
-  const handleToggle = (key: keyof SettingsType) => {
-    setSettings((prev) => ({
-      ...prev,
-      [key]: !prev[key],
-    }));
-  };
 
   const copyAccessKey = async () => {
     try {
@@ -42,7 +36,7 @@ const Settings: React.FC = () => {
 
   const handleContactSupport = () => {
     window.open(
-      "mailto:support@leakguard.com?subject=Pedido de Suporte",
+      "https://wa.me/351937934254?text=Preciso%20de%20Apoio%20ao%20Cliente",
       "_blank"
     );
   };
@@ -119,18 +113,11 @@ const Settings: React.FC = () => {
                 </p>
               </div>
             </div>
-            <button
-              onClick={() => handleToggle("weeklyReports")}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${
-                settings.weeklyReports ? "bg-primary" : "bg-gray-600"
-              }`}
-            >
-              <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${
-                  settings.weeklyReports ? "translate-x-6" : "translate-x-1"
-                }`}
-              />
-            </button>
+            <label className="relative inline-flex cursor-pointer items-center">
+              <input id="switch1" type="checkbox" className="peer sr-only" />
+              <label htmlFor="switch1" className="hidden"></label>
+              <div className="peer h-6 w-11 rounded-full border bg-gray-600 after:absolute after:left-[2px] after:top-0.5 after:h-5 after:w-5 after:rounded-full after:border after:border-gray-600 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary peer-checked:after:translate-x-full peer-checked:after:border-primary"></div>
+            </label>
           </div>
 
           <div className="flex items-center justify-between p-4 bg-tertiary rounded-lg">
@@ -143,18 +130,11 @@ const Settings: React.FC = () => {
                 </p>
               </div>
             </div>
-            <button
-              onClick={() => handleToggle("smsNotifications")}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${
-                settings.smsNotifications ? "bg-primary" : "bg-gray-600"
-              }`}
-            >
-              <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${
-                  settings.smsNotifications ? "translate-x-6" : "translate-x-1"
-                }`}
-              />
-            </button>
+            <label className="relative inline-flex cursor-pointer items-center">
+              <input id="switch2" type="checkbox" className="peer sr-only" />
+              <label htmlFor="switch2" className="hidden"></label>
+              <div className="peer h-6 w-11 rounded-full border bg-gray-600 after:absolute after:left-[2px] after:top-0.5 after:h-5 after:w-5 after:rounded-full after:border after:border-gray-600 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary peer-checked:after:translate-x-full peer-checked:after:border-primary"></div>
+            </label>
           </div>
 
           <div className="flex items-center justify-between p-4 bg-tertiary rounded-lg">
@@ -167,20 +147,11 @@ const Settings: React.FC = () => {
                 </p>
               </div>
             </div>
-            <button
-              onClick={() => handleToggle("emailNotifications")}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${
-                settings.emailNotifications ? "bg-primary" : "bg-gray-600"
-              }`}
-            >
-              <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${
-                  settings.emailNotifications
-                    ? "translate-x-6"
-                    : "translate-x-1"
-                }`}
-              />
-            </button>
+            <label className="relative inline-flex cursor-pointer items-center">
+              <input id="switch3" type="checkbox" className="peer sr-only" />
+              <label htmlFor="switch3" className="hidden"></label>
+              <div className="peer h-6 w-11 rounded-full border bg-gray-600 after:absolute after:left-[2px] after:top-0.5 after:h-5 after:w-5 after:rounded-full after:border after:border-gray-600 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary peer-checked:after:translate-x-full peer-checked:after:border-primary"></div>
+            </label>
           </div>
         </div>
       </div>
