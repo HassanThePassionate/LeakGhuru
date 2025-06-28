@@ -1,7 +1,10 @@
 "use client";
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import type React from "react";
 import { useEffect, useState } from "react";
+
 import {
   Plus,
   Search,
@@ -14,16 +17,14 @@ import {
   AlertTriangle,
 } from "lucide-react";
 
-// Mock types and API functions for demonstration
-interface Employee {
-  _id: string;
-  id: string;
-  name: string;
-  jobRole: string;
-  email: string;
-  phone: string;
-  enterprise: string;
-}
+import type { Employee } from "../types";
+
+import {
+  createEmployeeProfile,
+  DeleteEmployeeProfile,
+  getEmployeeData,
+  updateEmployeeProfile,
+} from "../api/employees";
 
 interface NewEmployee {
   name: string;
@@ -32,40 +33,6 @@ interface NewEmployee {
   phone: string;
   enterprise: string;
 }
-
-// Mock API functions
-const getEmployeeData = async (): Promise<Employee[]> => {
-  // Simulate API call
-  return [];
-};
-
-const createEmployeeProfile = async (
-  employee: NewEmployee
-): Promise<Employee> => {
-  // Simulate API call
-  return {
-    _id: Date.now().toString(),
-    id: Date.now().toString(),
-    ...employee,
-  };
-};
-
-const updateEmployeeProfile = async (
-  employee: NewEmployee,
-  id: string
-): Promise<Employee> => {
-  // Simulate API call
-  return {
-    _id: id,
-    id: id,
-    ...employee,
-  };
-};
-
-const DeleteEmployeeProfile = async (id: string): Promise<void> => {
-  // Simulate API call
-  console.log("Deleting employee:", id);
-};
 
 const Monitoring: React.FC = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -89,25 +56,21 @@ const Monitoring: React.FC = () => {
     enterprise: "",
   });
 
-  const employeeData = async () => {
-    try {
+  useEffect(() => {
+    const employeeData = async () => {
       const data = await getEmployeeData();
       setEmployees(data);
-    } catch (error) {
-      console.error("Failed to fetch employees:", error);
-    }
-  };
-
-  // Fix: Add dependency array to prevent infinite re-renders
-  useEffect(() => {
+    };
     employeeData();
-  }, []); // Empty dependency array means this runs only once on mount
+  }, []); // ← Only run on mount
 
   const filteredEmployees = employees.filter(
     (employee) =>
-      employee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      employee.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      employee.jobRole.toLowerCase().includes(searchTerm.toLowerCase())
+      (employee.name?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+      (employee.email?.toLowerCase() || "").includes(
+        searchTerm.toLowerCase()
+      ) ||
+      (employee.jobRole?.toLowerCase() || "").includes(searchTerm.toLowerCase())
   );
 
   const openModal = (type: "add" | "edit" | "view", employee?: Employee) => {
@@ -123,11 +86,11 @@ const Monitoring: React.FC = () => {
     } else if (employee) {
       setSelectedEmployee(employee);
       setNewEmployee({
-        name: employee.name,
-        jobRole: employee.jobRole,
-        email: employee.email,
-        phone: employee.phone,
-        enterprise: employee.enterprise,
+        name: employee.name || "",
+        jobRole: employee.jobRole || "",
+        email: employee.email || "",
+        phone: employee.phone || "",
+        enterprise: employee.enterprise || "",
       });
     }
     setIsModalOpen(true);
@@ -184,31 +147,40 @@ const Monitoring: React.FC = () => {
     handleInputChange("phone", formatted);
   };
 
-  // Fix: Add event parameter and prevent default form submission
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault(); // This prevents the page refresh
+  const handleSubmit = async (e: any) => {
+    e.preventDefault();
     setIsSaving(true);
-
     try {
       if (modalType === "add") {
-        const createdEmployee = await createEmployeeProfile(newEmployee);
-        setEmployees((prev) => [...prev, createdEmployee]);
+        await createEmployeeProfile(newEmployee);
       } else if (modalType === "edit" && selectedEmployee) {
-        const updatedEmployee = await updateEmployeeProfile(
-          newEmployee,
+        await updateEmployeeProfile(
+          {
+            name: newEmployee.name,
+            jobRole: newEmployee.jobRole,
+            email: newEmployee.email,
+            phone: newEmployee.phone,
+            enterprise: newEmployee.enterprise,
+          },
           selectedEmployee._id
         );
-        setEmployees((prev) =>
-          prev.map((emp) =>
-            emp._id === selectedEmployee._id ? updatedEmployee : emp
-          )
-        );
       }
-      closeModal();
+
+      // Always refresh data from server after any operation
+      const freshData = await getEmployeeData();
+      setEmployees(freshData);
     } catch (error) {
       console.error("Failed to save employee:", error);
+      // Still refresh data even if save fails to ensure consistency
+      try {
+        const data = await getEmployeeData();
+        setEmployees(data);
+      } catch (refreshError) {
+        console.error("Failed to refresh employee data:", refreshError);
+      }
     } finally {
       setIsSaving(false);
+      closeModal();
     }
   };
 
@@ -228,10 +200,21 @@ const Monitoring: React.FC = () => {
     setIsDeleting(true);
     try {
       await DeleteEmployeeProfile(employeeToDelete._id);
-      setEmployees(employees.filter((emp) => emp._id !== employeeToDelete._id));
+
+      // Always refresh data from server after delete
+      const freshData = await getEmployeeData();
+      setEmployees(freshData);
+
       closeDeleteModal();
     } catch (error) {
       console.error("Failed to delete employee:", error);
+      // Still refresh data even if delete fails
+      try {
+        const data = await getEmployeeData();
+        setEmployees(data);
+      } catch (refreshError) {
+        console.error("Failed to refresh employee data:", refreshError);
+      }
     } finally {
       setIsDeleting(false);
     }
@@ -243,6 +226,22 @@ const Monitoring: React.FC = () => {
     newEmployee.email &&
     newEmployee.phone &&
     newEmployee.enterprise;
+
+  // Helper function to get employee initials safely
+  const getEmployeeInitials = (name: string | undefined | null): string => {
+    if (!name || typeof name !== "string") return "??";
+
+    const nameParts = name
+      .trim()
+      .split(" ")
+      .filter((part) => part.length > 0);
+    if (nameParts.length === 0) return "??";
+
+    return nameParts
+      .slice(0, 2) // Take only first 2 parts
+      .map((part) => part[0]?.toUpperCase() || "")
+      .join("");
+  };
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -327,24 +326,25 @@ const Monitoring: React.FC = () => {
                     <div className="flex items-center space-x-3">
                       <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
                         <span className="text-white font-medium text-sm">
-                          {employee.name
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")}
+                          {getEmployeeInitials(employee.name)}
                         </span>
                       </div>
                       <span className="text-white font-medium">
-                        {employee.name}
+                        {employee.name || "Nome não disponível"}
                       </span>
                     </div>
                   </td>
                   <td className="px-6 py-4 text-gray-300">
-                    {employee.jobRole}
+                    {employee.jobRole || "-"}
                   </td>
-                  <td className="px-6 py-4 text-gray-300">{employee.email}</td>
-                  <td className="px-6 py-4 text-gray-300">{employee.phone}</td>
                   <td className="px-6 py-4 text-gray-300">
-                    {employee.enterprise}
+                    {employee.email || "-"}
+                  </td>
+                  <td className="px-6 py-4 text-gray-300">
+                    {employee.phone || "-"}
+                  </td>
+                  <td className="px-6 py-4 text-gray-300">
+                    {employee.enterprise || "-"}
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center justify-center space-x-2">
@@ -548,7 +548,7 @@ const Monitoring: React.FC = () => {
               <p className="text-gray-300 mb-4">
                 Tem a certeza de que deseja remover{" "}
                 <span className="font-semibold text-white">
-                  {employeeToDelete.name}
+                  {employeeToDelete.name || "este funcionário"}
                 </span>{" "}
                 da monitorização?
               </p>
@@ -562,25 +562,24 @@ const Monitoring: React.FC = () => {
                 <div className="flex items-center space-x-3 mb-3">
                   <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
                     <span className="text-white font-medium text-sm">
-                      {employeeToDelete.name
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")}
+                      {getEmployeeInitials(employeeToDelete.name)}
                     </span>
                   </div>
                   <div>
                     <p className="text-white font-medium">
-                      {employeeToDelete.name}
+                      {employeeToDelete.name || "Nome não disponível"}
                     </p>
                     <p className="text-gray-400 text-sm">
-                      {employeeToDelete.jobRole}
+                      {employeeToDelete.jobRole || "Cargo não disponível"}
                     </p>
                   </div>
                 </div>
                 <div className="text-sm text-gray-300">
-                  <p>{employeeToDelete.email}</p>
-                  <p>{employeeToDelete.phone}</p>
-                  <p>{employeeToDelete.enterprise}</p>
+                  <p>{employeeToDelete.email || "Email não disponível"}</p>
+                  <p>{employeeToDelete.phone || "Telefone não disponível"}</p>
+                  <p>
+                    {employeeToDelete.enterprise || "Empresa não disponível"}
+                  </p>
                 </div>
               </div>
 

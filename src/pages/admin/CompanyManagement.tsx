@@ -134,16 +134,15 @@ const CompanyManagement: React.FC = () => {
       company.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const fetchTotalEmployees = async () => {
+    try {
+      const total = await getAllCompaniesEmployee();
+      setTotalEmployees(total);
+    } catch (err) {
+      console.error("Error fetching total employees:", err);
+    }
+  };
   useEffect(() => {
-    const fetchTotalEmployees = async () => {
-      try {
-        const total = await getAllCompaniesEmployee();
-        setTotalEmployees(total);
-      } catch (err) {
-        console.error("Error fetching total employees:", err);
-      }
-    };
-
     fetchTotalEmployees();
   }, []);
 
@@ -371,6 +370,7 @@ const CompanyManagement: React.FC = () => {
     try {
       await deleteCompany(companyToDelete._id);
       setCompanies((prev) => prev.filter((c) => c._id !== companyToDelete._id));
+      fetchTotalEmployees();
       setIsDeleteModalOpen(false);
       setCompanyToDelete(null);
     } catch (err: any) {
