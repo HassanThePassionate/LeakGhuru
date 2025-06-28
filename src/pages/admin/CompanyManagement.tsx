@@ -317,7 +317,8 @@ const CompanyManagement: React.FC = () => {
     }
   };
 
-  const handleEditCompany = async () => {
+  const handleEditCompany = async (e: any) => {
+    e.preventDefault();
     if (!selectedCompany) return;
 
     setIsSaving(true);
@@ -332,6 +333,7 @@ const CompanyManagement: React.FC = () => {
           c._id === selectedCompany._id ? { ...c, ...updatedCompany } : c
         )
       );
+      getCompanies();
       setIsEditModalOpen(false);
       setSelectedCompany(null);
     } catch (err: any) {
