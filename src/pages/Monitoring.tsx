@@ -1,10 +1,7 @@
 "use client";
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import type React from "react";
-import { useEffect, useState } from "react";
-
+import { useState } from "react";
 import {
   Plus,
   Search,
@@ -15,16 +12,10 @@ import {
   X,
   Save,
   AlertTriangle,
+  Loader2,
 } from "lucide-react";
-
 import type { Employee } from "../types";
-
-import {
-  createEmployeeProfile,
-  DeleteEmployeeProfile,
-  getEmployeeData,
-  updateEmployeeProfile,
-} from "../api/employees";
+import { useEmployees } from "../context/employee-context";
 
 interface NewEmployee {
   name: string;
@@ -34,8 +25,18 @@ interface NewEmployee {
   enterprise: string;
 }
 
-const Monitoring: React.FC = () => {
-  const [employees, setEmployees] = useState<Employee[]>([]);
+const MonitoringRefactored: React.FC = () => {
+  const {
+    employees,
+    loading,
+    error,
+    addEmployee,
+    updateEmployee,
+    deleteEmployee,
+    searchEmployees,
+    refreshEmployees,
+  } = useEmployees();
+
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(
     null
@@ -56,22 +57,8 @@ const Monitoring: React.FC = () => {
     enterprise: "",
   });
 
-  useEffect(() => {
-    const employeeData = async () => {
-      const data = await getEmployeeData();
-      setEmployees(data);
-    };
-    employeeData();
-  }, []); // ← Only run on mount
-
-  const filteredEmployees = employees.filter(
-    (employee) =>
-      (employee.name?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
-      (employee.email?.toLowerCase() || "").includes(
-        searchTerm.toLowerCase()
-      ) ||
-      (employee.jobRole?.toLowerCase() || "").includes(searchTerm.toLowerCase())
-  );
+  // Use the context search function
+  const filteredEmployees = searchEmployees(searchTerm);
 
   const openModal = (type: "add" | "edit" | "view", employee?: Employee) => {
     setModalType(type);
@@ -147,40 +134,22 @@ const Monitoring: React.FC = () => {
     handleInputChange("phone", formatted);
   };
 
-  const handleSubmit = async (e: any) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
+
     try {
       if (modalType === "add") {
-        await createEmployeeProfile(newEmployee);
+        await addEmployee(newEmployee);
       } else if (modalType === "edit" && selectedEmployee) {
-        await updateEmployeeProfile(
-          {
-            name: newEmployee.name,
-            jobRole: newEmployee.jobRole,
-            email: newEmployee.email,
-            phone: newEmployee.phone,
-            enterprise: newEmployee.enterprise,
-          },
-          selectedEmployee._id
-        );
+        await updateEmployee(newEmployee, selectedEmployee._id);
       }
-
-      // Always refresh data from server after any operation
-      const freshData = await getEmployeeData();
-      setEmployees(freshData);
+      closeModal();
     } catch (error) {
       console.error("Failed to save employee:", error);
-      // Still refresh data even if save fails to ensure consistency
-      try {
-        const data = await getEmployeeData();
-        setEmployees(data);
-      } catch (refreshError) {
-        console.error("Failed to refresh employee data:", refreshError);
-      }
+      // Error is already handled in context
     } finally {
       setIsSaving(false);
-      closeModal();
     }
   };
 
@@ -199,22 +168,11 @@ const Monitoring: React.FC = () => {
 
     setIsDeleting(true);
     try {
-      await DeleteEmployeeProfile(employeeToDelete._id);
-
-      // Always refresh data from server after delete
-      const freshData = await getEmployeeData();
-      setEmployees(freshData);
-
+      await deleteEmployee(employeeToDelete._id);
       closeDeleteModal();
     } catch (error) {
       console.error("Failed to delete employee:", error);
-      // Still refresh data even if delete fails
-      try {
-        const data = await getEmployeeData();
-        setEmployees(data);
-      } catch (refreshError) {
-        console.error("Failed to refresh employee data:", refreshError);
-      }
+      // Error is already handled in context
     } finally {
       setIsDeleting(false);
     }
@@ -227,24 +185,52 @@ const Monitoring: React.FC = () => {
     newEmployee.phone &&
     newEmployee.enterprise;
 
-  // Helper function to get employee initials safely
   const getEmployeeInitials = (name: string | undefined | null): string => {
     if (!name || typeof name !== "string") return "??";
-
     const nameParts = name
       .trim()
       .split(" ")
       .filter((part) => part.length > 0);
     if (nameParts.length === 0) return "??";
-
     return nameParts
-      .slice(0, 2) // Take only first 2 parts
+      .slice(0, 2)
       .map((part) => part[0]?.toUpperCase() || "")
       .join("");
   };
 
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="flex items-center space-x-3">
+          <Loader2 className="w-6 h-6 text-primary animate-spin" />
+          <span className="text-white">Carregando funcionários...</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 animate-fade-in">
+      {/* Error Display */}
+      {error && (
+        <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4">
+          <div className="flex items-center space-x-3">
+            <AlertTriangle className="w-5 h-5 text-red-400" />
+            <div>
+              <p className="text-red-400 font-medium">Erro</p>
+              <p className="text-red-300 text-sm">{error}</p>
+            </div>
+            <button
+              onClick={refreshEmployees}
+              className="ml-auto px-3 py-1 bg-red-500/20 text-red-400 rounded text-sm hover:bg-red-500/30 transition-colors"
+            >
+              Tentar novamente
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">
@@ -377,11 +363,13 @@ const Monitoring: React.FC = () => {
           </table>
         </div>
 
-        {filteredEmployees.length === 0 && (
+        {filteredEmployees.length === 0 && !loading && (
           <div className="text-center py-12">
             <Users className="w-12 h-12 text-gray-500 mx-auto mb-4" />
             <p className="text-gray-400">
-              Nenhum funcionário encontrado na sua pesquisa.
+              {searchTerm
+                ? "Nenhum funcionário encontrado na sua pesquisa."
+                : "Nenhum funcionário encontrado."}
             </p>
           </div>
         )}
@@ -391,7 +379,6 @@ const Monitoring: React.FC = () => {
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-secondary rounded-xl w-full max-w-md border border-tertiary animate-slide-up">
-            {/* Modal Header */}
             <div className="flex items-center justify-between p-6 border-b border-tertiary">
               <h3 className="text-xl font-bold text-white">
                 {modalType === "add"
@@ -408,7 +395,6 @@ const Monitoring: React.FC = () => {
               </button>
             </div>
 
-            {/* Modal Content */}
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -490,7 +476,6 @@ const Monitoring: React.FC = () => {
                 />
               </div>
 
-              {/* Modal Actions */}
               <div className="flex justify-end space-x-4 pt-4">
                 <button
                   type="button"
@@ -505,7 +490,11 @@ const Monitoring: React.FC = () => {
                     disabled={isSaving || !isFormValid}
                     className="flex items-center space-x-2 px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
                   >
-                    <Save className="w-4 h-4" />
+                    {isSaving ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Save className="w-4 h-4" />
+                    )}
                     <span>
                       {isSaving
                         ? "A guardar..."
@@ -525,7 +514,6 @@ const Monitoring: React.FC = () => {
       {isDeleteModalOpen && employeeToDelete && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-secondary rounded-xl w-full max-w-md border border-tertiary animate-slide-up">
-            {/* Modal Header */}
             <div className="flex items-center justify-between p-6 border-b border-tertiary">
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 bg-red-500/20 rounded-lg flex items-center justify-center">
@@ -543,7 +531,6 @@ const Monitoring: React.FC = () => {
               </button>
             </div>
 
-            {/* Modal Content */}
             <div className="p-6">
               <p className="text-gray-300 mb-4">
                 Tem a certeza de que deseja remover{" "}
@@ -557,7 +544,6 @@ const Monitoring: React.FC = () => {
                 permanentemente removido do sistema de monitorização.
               </p>
 
-              {/* Employee Info */}
               <div className="bg-tertiary rounded-lg p-4 mb-6">
                 <div className="flex items-center space-x-3 mb-3">
                   <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
@@ -583,7 +569,6 @@ const Monitoring: React.FC = () => {
                 </div>
               </div>
 
-              {/* Modal Actions */}
               <div className="flex justify-end space-x-4">
                 <button
                   onClick={closeDeleteModal}
@@ -593,9 +578,14 @@ const Monitoring: React.FC = () => {
                 </button>
                 <button
                   onClick={confirmDelete}
-                  className="flex items-center space-x-2 px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200"
+                  disabled={isDeleting}
+                  className="flex items-center space-x-2 px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:opacity-50 transition-colors duration-200"
                 >
-                  <Trash2 className="w-4 h-4" />
+                  {isDeleting ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Trash2 className="w-4 h-4" />
+                  )}
                   <span>
                     {isDeleting ? "Removendo..." : "Remover Funcionário"}
                   </span>
@@ -609,4 +599,4 @@ const Monitoring: React.FC = () => {
   );
 };
 
-export default Monitoring;
+export default MonitoringRefactored;
