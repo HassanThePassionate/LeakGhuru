@@ -5,15 +5,25 @@ import { MetricData } from "../../types/dashboard";
 import * as Icons from "lucide-react";
 
 interface EnhancedMetricCardProps {
-  metric: MetricData;
+  metric?: MetricData;
   onClick?: () => void;
+  title?: string;
+  value?: string | number;
+  icon?: React.ReactNode;
+  color?: "primary" | "success" | "warning" | "danger";
 }
 
 const EnhancedMetricCard: React.FC<EnhancedMetricCardProps> = ({
   metric,
   onClick,
+  title,
+  value,
+  icon,
+  color,
 }) => {
-  const IconComponent = (Icons as any)[metric.icon] || Icons.Activity;
+  // Use optional chaining and fallback for icon
+  const IconComponent =
+    (metric?.icon && (Icons as any)[metric.icon]) || Icons.Activity;
 
   const colorClasses = {
     primary: "bg-primary/10 text-primary border-primary/20",
@@ -23,7 +33,7 @@ const EnhancedMetricCard: React.FC<EnhancedMetricCardProps> = ({
   };
 
   const trendData =
-    metric.trend?.map((value, index) => ({ index, value })) || [];
+    metric?.trend?.map((value, index) => ({ index, value })) || [];
 
   return (
     <div
@@ -33,23 +43,31 @@ const EnhancedMetricCard: React.FC<EnhancedMetricCardProps> = ({
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
           <p className="text-gray-400 text-sm font-medium mb-2">
-            {metric.title}
+            {title ?? metric?.title ?? ""}
           </p>
           <p className="text-3xl font-bold text-white mb-2">
-            {metric.value.toLocaleString()}
+            {value !== undefined
+              ? value.toLocaleString()
+              : metric?.value !== undefined
+              ? metric.value.toLocaleString()
+              : ""}
           </p>
         </div>
         <div
           className={`w-12 h-12 rounded-lg flex items-center justify-center border ${
-            colorClasses[metric.color]
+            colorClasses[
+              color
+                ? color
+                : (metric?.color as keyof typeof colorClasses) || "primary"
+            ]
           }`}
         >
-          <IconComponent className="w-6 h-6" />
+          {icon ? icon : <IconComponent className="w-6 h-6" />}
         </div>
       </div>
 
       {/* Mini Trend Chart */}
-      {metric.trend && metric.trend.length > 0 && (
+      {metric?.trend && metric.trend.length > 0 && (
         <div className="h-16 mt-4">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={trendData}>

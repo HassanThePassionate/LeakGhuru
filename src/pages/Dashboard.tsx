@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { RefreshCw } from "lucide-react";
+import { Mail, RefreshCw, User } from "lucide-react";
 import EnhancedMetricCard from "../components/Dashboard/EnhancedMetricCard";
 import InteractiveChart from "../components/Dashboard/InteractiveChart";
 import GeographicMap from "../components/Dashboard/GeographicMap";
@@ -8,6 +8,7 @@ import { DashboardSkeleton } from "../components/Dashboard/LoadingStates";
 import { useDashboardData } from "../hooks/useDashboardData";
 import { FilterOptions, ChartData } from "../types/dashboard";
 import { mockLeakLocations, mockEmailVolumeData } from "../data/mockData";
+import { useEmployeeStats } from "../hooks/useEmployeeStats";
 
 const Dashboard: React.FC = () => {
   const [filters] = useState<FilterOptions>({
@@ -24,6 +25,7 @@ const Dashboard: React.FC = () => {
   const handleChartDrillDown = (dataPoint: ChartData) => {
     console.log("Analisar em detalhe:", dataPoint);
   };
+  const { totalEmployees } = useEmployeeStats();
 
   if (loading) {
     return <DashboardSkeleton />;
@@ -70,6 +72,18 @@ const Dashboard: React.FC = () => {
 
         {/* Metrics Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <EnhancedMetricCard
+            title="Total de Emails monitorizados"
+            value={totalEmployees}
+            icon={<Mail className="w-6 h-6" />}
+            color="primary"
+          />
+          <EnhancedMetricCard
+            title="Monitorização Ativa"
+            value={totalEmployees}
+            icon={<User className="w-6 h-6" />}
+            color="success"
+          />
           {metrics.map((metric) => (
             <EnhancedMetricCard
               key={metric.id}

@@ -6,15 +6,13 @@ import {
   FilterOptions,
 } from "../types/dashboard";
 
-import { useEmployeeStats } from "./useEmployeeStats";
-
 export const useDashboardData = (filters: FilterOptions) => {
   const [metrics, setMetrics] = useState<MetricData[]>([]);
   const [chartData, setChartData] = useState<ChartData[]>([]);
   const [tableData, setTableData] = useState<TableData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { totalEmployees } = useEmployeeStats();
+
   const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -28,16 +26,6 @@ export const useDashboardData = (filters: FilterOptions) => {
       // Generate metrics data
       const metricsData: MetricData[] = [
         {
-          id: "1",
-          title: "Total de Emails Monitorizados",
-          value: totalEmployees,
-          change: 12.5,
-          changeType: "positive",
-          icon: "Mail",
-          color: "primary",
-          trend: [100, 120, 115, 140, 125, 160, 145, 180],
-        },
-        {
           id: "2",
           title: "Fugas de Dados Detetadas",
           value: 23,
@@ -47,16 +35,7 @@ export const useDashboardData = (filters: FilterOptions) => {
           color: "danger",
           trend: [30, 25, 28, 22, 26, 20, 24, 23],
         },
-        {
-          id: "3",
-          title: "Monitorização Ativa",
-          value: totalEmployees,
-          change: 5.2,
-          changeType: "positive",
-          icon: "Users",
-          color: "success",
-          trend: [200, 210, 220, 235, 240, 245, 247, 247],
-        },
+
         {
           id: "4",
           title: "Tempo de Resposta",
