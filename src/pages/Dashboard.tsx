@@ -6,7 +6,6 @@ import GeographicMap from "../components/Dashboard/GeographicMap";
 import ErrorBoundary from "../components/Dashboard/ErrorBoundary";
 import { DashboardSkeleton } from "../components/Dashboard/LoadingStates";
 import { useDashboardData } from "../hooks/useDashboardData";
-import { useRealTimeData } from "../hooks/useRealTimeData";
 import { FilterOptions, ChartData } from "../types/dashboard";
 import { mockLeakLocations, mockEmailVolumeData } from "../data/mockData";
 
@@ -20,9 +19,7 @@ const Dashboard: React.FC = () => {
     status: ["Ativo", "Crítico"],
     customFilters: {},
   });
-
   const { metrics, loading, error, refreshData } = useDashboardData(filters);
-  const { data: realTimeMetrics } = useRealTimeData(metrics);
 
   const handleChartDrillDown = (dataPoint: ChartData) => {
     console.log("Analisar em detalhe:", dataPoint);
@@ -73,7 +70,7 @@ const Dashboard: React.FC = () => {
 
         {/* Metrics Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {realTimeMetrics.map((metric) => (
+          {metrics.map((metric) => (
             <EnhancedMetricCard
               key={metric.id}
               metric={metric}
