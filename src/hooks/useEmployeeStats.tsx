@@ -6,6 +6,8 @@ import { useEmployees } from "../context/employee-context";
 export const useEmployeeStats = () => {
   const { employees } = useEmployees();
 
+  console.log("useEmployeeStats", employees);
+
   const stats = useMemo(() => {
     const totalEmployees = employees.length;
 
@@ -23,6 +25,60 @@ export const useEmployeeStats = () => {
       return acc;
     }, {} as Record<string, number>);
 
+    // Group by month (based on createdAt)
+    const monthlyData = employees.reduce((acc, employee) => {
+      if (employee.createdAt) {
+        const date = new Date(employee.createdAt);
+        const monthNames = [
+          "Jan",
+          "Feb",
+          "Mar",
+          "Apr",
+          "May",
+          "Jun",
+          "Jul",
+          "Aug",
+          "Sep",
+          "Oct",
+          "Nov",
+          "Dec",
+        ];
+        const month = monthNames[date.getMonth()];
+
+        const existingMonth = acc.find((item) => item.month === month);
+        if (existingMonth) {
+          existingMonth.employee += 1;
+        } else {
+          acc.push({
+            month,
+            employee: 1,
+            leaks: 0,
+          });
+        }
+      }
+      return acc;
+    }, [] as Array<{ month: string; employee: number; leaks: number }>);
+
+    // Sort monthly data by month order
+    const monthOrder = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+
+    const sortedMonthlyData = monthlyData.sort(
+      (a, b) => monthOrder.indexOf(a.month) - monthOrder.indexOf(b.month)
+    );
+
     // Most common enterprise
     const mostCommonEnterprise =
       Object.entries(enterpriseGroups).sort(([, a], [, b]) => b - a)[0]?.[0] ||
@@ -37,6 +93,7 @@ export const useEmployeeStats = () => {
       totalEmployees,
       enterpriseGroups,
       jobRoleGroups,
+      monthlyData: sortedMonthlyData,
       mostCommonEnterprise,
       mostCommonJobRole,
       uniqueEnterprises: Object.keys(enterpriseGroups).length,

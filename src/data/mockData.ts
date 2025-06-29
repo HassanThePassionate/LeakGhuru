@@ -1,10 +1,4 @@
-import {
-  Employee,
-  Settings,
-  DashboardStats,
-  LeakLocation,
-  EmailVolumeData,
-} from "../types";
+import { Employee, Settings, DashboardStats, LeakLocation } from "../types";
 
 export const mockCompany = {};
 
@@ -66,19 +60,4 @@ export const mockLeakLocations: LeakLocation[] = [
     longitude: 139.6503,
     count: 3,
   },
-];
-
-export const mockEmailVolumeData: EmailVolumeData[] = [
-  { month: "Jan", emails: 8500, leaks: 2 },
-  { month: "Feb", emails: 9200, leaks: 1 },
-  { month: "Mar", emails: 10100, leaks: 3 },
-  { month: "Apr", emails: 11500, leaks: 4 },
-  { month: "May", emails: 12800, leaks: 2 },
-  { month: "Jun", emails: 13200, leaks: 5 },
-  { month: "Jul", emails: 14100, leaks: 3 },
-  { month: "Aug", emails: 15600, leaks: 1 },
-  { month: "Sep", emails: 16200, leaks: 2 },
-  { month: "Oct", emails: 17800, leaks: 0 },
-  { month: "Nov", emails: 18500, leaks: 0 },
-  { month: "Dec", emails: 19200, leaks: 0 },
 ];

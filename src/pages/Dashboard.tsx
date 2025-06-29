@@ -7,7 +7,7 @@ import ErrorBoundary from "../components/Dashboard/ErrorBoundary";
 import { DashboardSkeleton } from "../components/Dashboard/LoadingStates";
 import { useDashboardData } from "../hooks/useDashboardData";
 import { FilterOptions, ChartData } from "../types/dashboard";
-import { mockLeakLocations, mockEmailVolumeData } from "../data/mockData";
+import { mockLeakLocations } from "../data/mockData";
 import { useEmployeeStats } from "../hooks/useEmployeeStats";
 
 const Dashboard: React.FC = () => {
@@ -25,7 +25,7 @@ const Dashboard: React.FC = () => {
   const handleChartDrillDown = (dataPoint: ChartData) => {
     console.log("Analisar em detalhe:", dataPoint);
   };
-  const { totalEmployees } = useEmployeeStats();
+  const { totalEmployees, monthlyData } = useEmployeeStats();
 
   if (loading) {
     return <DashboardSkeleton />;
@@ -96,10 +96,10 @@ const Dashboard: React.FC = () => {
         {/* Charts Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <InteractiveChart
-            data={mockEmailVolumeData.map((item) => ({
+            data={monthlyData.map((item) => ({
               id: item.month,
               name: item.month,
-              value: item.emails,
+              value: item.employee,
               category: "emails",
             }))}
             title="Emails monitorizados"

@@ -19,6 +19,7 @@ export interface Employee {
   email: string;
   phone: string;
   enterprise: string;
+  createdAt: Date;
 }
 
 export interface Settings {
